@@ -1,10 +1,12 @@
-import express from "express"
-import connect from "./config/db.config.js"
-import routes from "./routes/index.js"
+import express from "express";
+import connect from "./config/db.config.js";
+import routes from "./routes/index.js";
+import * as dotenv from "dotenv";
 
-const app = express()
-connect()
+const app = express();
+dotenv.config();
+connect();
 
-routes(app)
+routes(app);
 
-export default app
+export default app;
