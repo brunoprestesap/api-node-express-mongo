@@ -1,5 +1,5 @@
 import NaoEncontrado from "../erros/NaoEncontrado.js";
-import autor from "../models/Autor.js";
+import { autor } from "../models/index.js";
 
 class AutorController {
   static async listarAutores(req, res, next) {
@@ -28,8 +28,11 @@ class AutorController {
 
   static async cadastraAutor(req, res, next) {
     try {
-      const novoAutor = await autor.create(req.body);
-      res.status(201).json({ message: "criado com sucesso", autor: novoAutor });
+      
+      let novoAutor = new autor(req.body);
+
+      const result = await novoAutor.save();
+      res.status(201).json({ message: "criado com sucesso", autor: result });
     } catch (error) {
       next(error);
     }

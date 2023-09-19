@@ -1,5 +1,4 @@
-import livro from "../models/Livro.js";
-import autor from "../models/Autor.js";
+import {livro} from "../models/index.js";
 
 class LivroController {
 
@@ -28,15 +27,12 @@ class LivroController {
 
   static async cadastraLivro (req, res, next) {
 
-    const novoLivro = req.body;
+    const novoLivro = new livro(req.body);
 
     try {
 
-      const autorEncontrado = await autor.findById(novoLivro.autor);
-      const livroCompleto = { ...novoLivro, autor: { ...autorEncontrado._doc }};
-
-      const livroCriado = await livro.create(livroCompleto);
-      res.status(201).json({ message: "criado com sucesso", livro: livroCriado});
+      const result = await novoLivro.save();
+      res.status(201).json({ message: "criado com sucesso", livro: result});
             
     } catch (error) {
       next(error);
@@ -67,19 +63,38 @@ class LivroController {
     }
   }
 
-  static async listarLivrosPorEditora (req, res, next) {
-
-    const editora = req.query.editora;
+  static async listarLivrosPorFiltro (req, res, next) {
 
     try {
+
+      const busca = processaBusca(req.query);
+      
             
-      const livrosEditora = await livro.find({editora: editora});            
-      res.status(200).json(livrosEditora);
+      const livrosResultado = await livro.find(busca);
+      res.status(200).json(livrosResultado);
 
     } catch (error) {
       next(error);
     }
   }
+}
+
+function processaBusca(parametros) {
+  const {editora, titulo, minPaginas, maxPaginas } = parametros;
+
+  const busca = {};
+
+  if (editora) busca.editora = {$regex: editora, $options: "i"};
+  if (titulo) busca.titulo = { $regex: titulo, $options: "i" };
+
+  if (minPaginas || maxPaginas) busca.paginas = {};
+
+  if (minPaginas) busca.paginas.$gte = minPaginas;
+  if (maxPaginas) busca.paginas.$lte = maxPaginas;
+
+  console.log(busca);
+
+  return  busca;
 }
 
 export default LivroController;
